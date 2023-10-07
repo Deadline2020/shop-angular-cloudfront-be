@@ -1,0 +1,93 @@
+openapi: '3.0.2'
+info:
+  title: API product-service
+  version: '1.0'
+servers:
+  - url: https://1d6y1e8y9h.execute-api.eu-west-1.amazonaws.com/dev
+paths:
+  /products:
+    get:
+      summary: Get a list of products
+      tags:
+        - Products
+      operationId: getProductsList
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Products'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /products/{productId}:
+    get:
+      summary: Get the product by ID
+      tags:
+        - Products
+      operationId: getProductById
+      parameters:
+        - name: productId
+          in: path
+          description: ID of the product
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+components:
+  responses:
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'    
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique ID of the product
+        title:
+          type: string
+          description: Name of the product
+        count:
+          type: integer
+          format: int32
+          description: Quantity of the product
+        price:
+          type: number
+          format: float
+          description: Price of the product
+        description:
+          type: string
+          description: Description of the product
+    Products:
+      type: array
+      items:
+        $ref: '#/components/schemas/Product'
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message
