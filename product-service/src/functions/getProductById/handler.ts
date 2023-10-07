@@ -4,7 +4,7 @@ import { StatusCode } from "src/constants/status-code";
 import { productService } from "src/service/productService";
 import { Product } from "src/types/types";
 
-const getProductById = async (event) => {
+export const getProductById = async (event) => {
   const { productId } = event.pathParameters;
   try {
     const product: Product = await productService.getProductById(productId);

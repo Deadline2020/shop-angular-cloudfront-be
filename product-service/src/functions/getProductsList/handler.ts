@@ -4,7 +4,7 @@ import { StatusCode } from "src/constants/status-code";
 import { productService } from "src/service/productService";
 import { Product } from "src/types/types";
 
-const getProductsList = async () => {
+export const getProductsList = async () => {
   try {
     const products: Product[] = await productService.getProductsList();
 
