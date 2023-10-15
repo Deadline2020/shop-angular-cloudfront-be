@@ -1,5 +1,5 @@
-import { productDB } from "src/db/productDB";
-import { productService } from "src/service/productService";
+import { productBaseList } from "src/db/productBaseList";
+import { productService } from "src/service/product.service";
 import { getProductById } from "./handler";
 
 describe("getProductById", () => {
@@ -7,21 +7,21 @@ describe("getProductById", () => {
     jest
       .spyOn(productService, "getProductById")
       .mockImplementation((id) =>
-        Promise.resolve(productDB.find((product) => product.id === id))
+        Promise.resolve(productBaseList.find((product) => product.id === id))
       );
 
     const eventMock = { pathParameters: { productId: "1" } };
     const result = await getProductById(eventMock);
 
     expect(result.statusCode).toBe(200);
-    expect(JSON.parse(result.body)).toEqual(productDB[0]);
+    expect(JSON.parse(result.body)).toEqual(productBaseList[0]);
   });
 
   it("should return 404 if the product is not found", async () => {
     jest
       .spyOn(productService, "getProductById")
       .mockImplementation((id) =>
-        Promise.resolve(productDB.find((product) => product.id === id))
+        Promise.resolve(productBaseList.find((product) => product.id === id))
       );
 
     const eventMock = { pathParameters: { productId: "non-existent ID" } };

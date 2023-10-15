@@ -1,10 +1,12 @@
 import { formatJSONResponse } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
 import { StatusCode } from "src/constants/status-code";
-import { productService } from "src/service/productService";
+import { productService } from "src/service/product.service";
 import { Product } from "src/types/types";
 
-export const getProductsList = async () => {
+export const getProductsList = async (event) => {
+  console.log("'getProductsList' lambda was called: ", event);
+
   try {
     const products: Product[] = await productService.getProductsList();
 

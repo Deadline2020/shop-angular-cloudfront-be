@@ -1,9 +1,15 @@
-export interface Product {
+export interface ProductInDB {
   id: string;
   title: string;
-  count: number;
   price: number;
   description: string;
+}
+export interface StockInDB {
+  product_id: string;
+  count: number;
+}
+export interface Product extends ProductInDB {
+  count: number;
 }
 
 export interface ResponseMessage {
