@@ -7,9 +7,8 @@ import { Product } from "src/types/types";
 export const getProductById = async (event) => {
   console.log("'getProductById' lambda was called: ", event);
 
-  const { productId } = event.pathParameters;
-
   try {
+    const { productId } = event.pathParameters;
     const product: Product = await productService.getProductById(productId);
 
     if (product) {
