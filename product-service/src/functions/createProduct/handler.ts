@@ -15,10 +15,8 @@ const bodySchema = object({
 
 export const createProduct = async (event) => {
   console.log("'createProduct' lambda was called: ", event);
-  
-  const body = event.body;
 
-  const isValidBody = await bodySchema.isValid(body);
+  const isValidBody = await bodySchema.isValid(event.body);
 
   if (!isValidBody) {
     return formatJSONResponse(StatusCode.BAD_REQUEST, {
@@ -27,7 +25,7 @@ export const createProduct = async (event) => {
   }
 
   try {
-    const product: Product = await productService.createProduct(body);
+    const product: Product = await productService.createProduct(event.body);
     return formatJSONResponse(StatusCode.CREATED, product);
   } catch (error) {
     return formatJSONResponse(StatusCode.INTERNAL_SERVER_ERROR, {
