@@ -24,6 +24,12 @@ const serverlessConfiguration: AWS = {
       IMPORT_BUCKET_NAME: "manga-world-dag-aws-import-service-bucket",
       UPLOAD_FOLDER: "uploaded",
       PARSED_FOLDER: "parsed",
+      QUEUE_URL: {
+        "Fn::ImportValue": "queueURL",
+      },
+      QUEUE_ARN: {
+        "Fn::ImportValue": "queueARN",
+      },
     },
     iamRoleStatements: [
       {
@@ -38,9 +44,13 @@ const serverlessConfiguration: AWS = {
         Resource:
           "arn:aws:s3:::${self:provider.environment.IMPORT_BUCKET_NAME}/*",
       },
+      {
+        Effect: "Allow",
+        Action: ["sqs:*"],
+        Resource: "${self:provider.environment.QUEUE_ARN}",
+      },
     ],
   },
-  // import the function via paths
   functions: { importProductsFile, importFileParser },
   package: { individually: true },
   custom: {

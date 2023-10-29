@@ -1,11 +1,8 @@
-import { formatJSONResponse } from "@libs/api-gateway";
-import { APIGatewayProxyResult, S3Event, S3EventRecord } from "aws-lambda";
-import { StatusCode } from "src/constants/status-code";
+import { S3Event, S3EventRecord } from "aws-lambda";
+
 import { importService } from "src/service/import.service";
 
-export const importFileParser = async (
-  event: S3Event
-): Promise<APIGatewayProxyResult> => {
+export const importFileParser = async (event: S3Event) => {
   console.log("'importFileParser' lambda was called: ", event);
 
   try {
@@ -20,8 +17,6 @@ export const importFileParser = async (
       }
     }
   } catch (error) {
-    return formatJSONResponse(StatusCode.INTERNAL_SERVER_ERROR, {
-      message: `Internal server error`,
-    });
+    console.log(`Internal server error`, error);
   }
 };
