@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
+import { SNSClient, PublishCommand } from "@aws-sdk/client-sns";
 
 import { productDB } from "src/db/product.database";
 import { Product, ProductInDB, StockInDB } from "src/types/types";
@@ -46,19 +47,40 @@ export const productService = {
   },
 
   createProduct: async (body: Omit<Product, "id">) => {
-    const id: string = uuidv4();
-    const { title, price, count, description } = body;
-
-    const newProduct = await productDB.createProduct(
-      id,
-      title,
-      price,
-      count,
-      description,
-      process.env.PRODUCTS_TABLE_NAME,
-      process.env.STOCKS_TABLE_NAME
-    );
+    const newProduct = await productDB.createProduct({
+      id: uuidv4(),
+      ...body,
+    });
 
     return newProduct;
+  },
+
+  batchCreateProduct: async (products: Omit<Product, "id">[]) => {
+    const productsWithID: Product[] = products.map((product) => ({
+      id: uuidv4(),
+      ...product,
+    }));
+
+    await productDB.batchCreateProduct(productsWithID);
+  },
+
+  sendMessages: async (products: Omit<Product, "id">[]) => {
+    const snsClient = new SNSClient({ region: "eu-west-1" });
+
+    for (const product of products) {
+      const sqsCommand = new PublishCommand({
+        Subject: `Product "${product.title}" was created`,
+        Message: JSON.stringify(product),
+        MessageAttributes: {
+          productPrice: {
+            DataType: "Number",
+            StringValue: `${product.price}`,
+          },
+        },
+        TopicArn: process.env.SNS_ARN,
+      });
+
+      await snsClient.send(sqsCommand);
+    }
   },
 };

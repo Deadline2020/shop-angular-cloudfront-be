@@ -1,6 +1,7 @@
+import { APIGatewayEvent, APIGatewayProxyResult } from "aws-lambda";
+
 import { formatJSONResponse } from "@libs/api-gateway";
 import { middyfy } from "@libs/lambda";
-import { APIGatewayEvent, APIGatewayProxyResult } from "aws-lambda";
 import { StatusCode } from "src/constants/status-code";
 import { importService } from "src/service/import.service";
 

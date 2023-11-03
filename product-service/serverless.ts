@@ -4,6 +4,7 @@ import {
   createProduct,
   getProductById,
   getProductsList,
+  catalogBatchProcess,
 } from "@functions/index";
 
 const serverlessConfiguration: AWS = {
@@ -15,6 +16,9 @@ const serverlessConfiguration: AWS = {
     runtime: "nodejs14.x",
     region: "eu-west-1",
     stage: "dev",
+    httpApi: {
+      cors: true,
+    },
     apiGateway: {
       minimumCompressionSize: 1024,
       shouldStartNameWithService: true,
@@ -24,6 +28,9 @@ const serverlessConfiguration: AWS = {
       NODE_OPTIONS: "--enable-source-maps --stack-trace-limit=1000",
       PRODUCTS_TABLE_NAME: "Products",
       STOCKS_TABLE_NAME: "Stocks",
+      SNS_ARN: {
+        Ref: "createProductTopic",
+      },
     },
     iamRoleStatements: [
       {
@@ -42,10 +49,21 @@ const serverlessConfiguration: AWS = {
           "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.STOCKS_TABLE_NAME}",
         ],
       },
+      {
+        Effect: "Allow",
+        Action: "sns:*",
+        Resource: {
+          Ref: "createProductTopic",
+        },
+      },
     ],
   },
-  // import the function via paths
-  functions: { getProductsList, getProductById, createProduct },
+  functions: {
+    getProductsList,
+    getProductById,
+    createProduct,
+    catalogBatchProcess,
+  },
   package: { individually: true },
   custom: {
     esbuild: {
@@ -85,6 +103,55 @@ const serverlessConfiguration: AWS = {
             ReadCapacityUnits: 5,
             WriteCapacityUnits: 5,
           },
+        },
+      },
+      catalogItemsQueue: {
+        Type: "AWS::SQS::Queue",
+        Properties: {
+          QueueName: "catalogItemsQueue",
+        },
+      },
+      createProductTopic: {
+        Type: "AWS::SNS::Topic",
+        Properties: {
+          TopicName: "createProductTopic",
+        },
+      },
+      mainSNSSubscription: {
+        Type: "AWS::SNS::Subscription",
+        Properties: {
+          Endpoint: "deadline2020@yandex.by",
+          Protocol: "email",
+          TopicArn: {
+            Ref: "createProductTopic",
+          },
+        },
+      },
+      additionalSNSSubscription: {
+        Type: "AWS::SNS::Subscription",
+        Properties: {
+          Endpoint: "burdalogin@yandex.by",
+          Protocol: "email",
+          TopicArn: {
+            Ref: "createProductTopic",
+          },
+          FilterPolicy: {
+            productPrice: [{ numeric: [">=", 300] }],
+          },
+        },
+      },
+    },
+    Outputs: {
+      sqsURL: {
+        Value: { Ref: "catalogItemsQueue" },
+        Export: {
+          Name: "queueURL",
+        },
+      },
+      sqsARN: {
+        Value: { "Fn::GetAtt": ["catalogItemsQueue", "Arn"] },
+        Export: {
+          Name: "queueARN",
         },
       },
     },

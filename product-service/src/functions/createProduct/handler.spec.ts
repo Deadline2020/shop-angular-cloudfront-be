@@ -50,7 +50,7 @@ describe("createProduct", () => {
       count: 555,
       description: "new product description",
     };
-    
+
     jest.spyOn(productService, "createProduct").mockImplementation(() => {
       throw new Error();
     });

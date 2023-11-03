@@ -6,8 +6,42 @@ import {
   TransactWriteCommand,
 } from "@aws-sdk/lib-dynamodb";
 
+import { Product } from "src/types/types";
+
 const client = new DynamoDBClient({ region: "eu-west-1" });
 const docClient = DynamoDBDocumentClient.from(client);
+
+const getTransactItems = (products: Product[]) => {
+  const result = [];
+
+  for (const product of products) {
+    const { id, title, price, count, description } = product;
+    result.push(
+      {
+        Put: {
+          Item: {
+            id,
+            title,
+            description,
+            price,
+          },
+          TableName: process.env.PRODUCTS_TABLE_NAME,
+        },
+      },
+      {
+        Put: {
+          Item: {
+            product_id: id,
+            count,
+          },
+          TableName: process.env.STOCKS_TABLE_NAME,
+        },
+      }
+    );
+  }
+
+  return result;
+};
 
 export const productDB = {
   getTable: async (tableName: string) => {
@@ -33,42 +67,21 @@ export const productDB = {
     return response;
   },
 
-  createProduct: async (
-    id: string,
-    title: string,
-    price: number,
-    count: number,
-    description: string,
-    productsTableName: string,
-    stocksTableName: string
-  ) => {
+  createProduct: async (data: Product) => {
     const command = new TransactWriteCommand({
-      TransactItems: [
-        {
-          Put: {
-            Item: {
-              id,
-              title,
-              description,
-              price,
-            },
-            TableName: productsTableName,
-          },
-        },
-        {
-          Put: {
-            Item: {
-              product_id: id,
-              count,
-            },
-            TableName: stocksTableName,
-          },
-        },
-      ],
+      TransactItems: getTransactItems([data]),
     });
 
     await docClient.send(command);
 
-    return { id, title, price, count, description };
+    return data;
+  },
+
+  batchCreateProduct: async (products: Product[]) => {
+    const command = new TransactWriteCommand({
+      TransactItems: getTransactItems(products),
+    });
+
+    await docClient.send(command);
   },
 };
