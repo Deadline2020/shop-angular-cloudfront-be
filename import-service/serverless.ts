@@ -11,9 +11,6 @@ const serverlessConfiguration: AWS = {
     runtime: "nodejs14.x",
     region: "eu-west-1",
     stage: "dev",
-    httpApi: {
-      cors: true,
-    },
     apiGateway: {
       minimumCompressionSize: 1024,
       shouldStartNameWithService: true,
@@ -63,6 +60,39 @@ const serverlessConfiguration: AWS = {
       define: { "require.resolve": undefined },
       platform: "node",
       concurrency: 10,
+    },
+  },
+  resources: {
+    Resources: {
+      GatewayResponseUnauthorized: {
+        Type: "AWS::ApiGateway::GatewayResponse",
+        Properties: {
+          ResponseParameters: {
+            "gatewayresponse.header.Access-Control-Allow-Origin": "'*'",
+            "gatewayresponse.header.Access-Control-Allow-Headers": "'*'",
+            "gatewayresponse.header.WWW-Authenticate": "'Basic'",
+          },
+          RestApiId: {
+            Ref: "ApiGatewayRestApi",
+          },
+          ResponseType: "UNAUTHORIZED",
+          StatusCode: "401",
+        },
+      },
+      GatewayResponseForbidden: {
+        Type: "AWS::ApiGateway::GatewayResponse",
+        Properties: {
+          ResponseParameters: {
+            "gatewayresponse.header.Access-Control-Allow-Origin": "'*'",
+            "gatewayresponse.header.Access-Control-Allow-Headers": "'*'",
+          },
+          RestApiId: {
+            Ref: "ApiGatewayRestApi",
+          },
+          ResponseType: "ACCESS_DENIED",
+          StatusCode: "403",
+        },
+      },
     },
   },
 };
